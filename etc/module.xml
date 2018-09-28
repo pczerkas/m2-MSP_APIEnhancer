@@ -22,5 +22,8 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
     <module name="MSP_APIEnhancer" setup_version="1.0.2">
+        <sequence>
+            <module name="MSP_Common"/>
+        </sequence>
     </module>
 </config>
