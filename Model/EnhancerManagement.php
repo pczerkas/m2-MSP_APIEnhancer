@@ -50,19 +50,42 @@ class EnhancerManagement implements EnhancerManagementInterface
      */
     private $state;
 
+    /**
+     * @var \Magento\Framework\App\Config\ReinitableConfigInterface
+     */
+    private $config;
+
+    /**
+     * @var \Magento\Store\Model\StoreManagerInterface
+     */
+    private $storeManager;
+
     public function __construct(
         RequestInterface $request,
         PageCacheConfig $pageCacheConfig,
         StateInterface $state,
+		\Magento\Framework\App\Config\ReinitableConfigInterface $config,
+		\Magento\Store\Model\StoreManagerInterface $storeManager,
         array $paths = []
     ) {
         $this->request = $request;
         $this->paths = $paths;
         $this->pageCacheConfig = $pageCacheConfig;
         $this->state = $state;
+		$this->config = $config;
+		$this->storeManager = $storeManager;
     }
 
+    public function getConfig($path)
+    {
+		$store = $this->storeManager->getStore();
 
+        $data = $this->config->getValue($path, \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $store->getCode());
+        if ($data === null) {
+            $data = $this->config->getValue($path);
+        }
+        return $data === false ? null : $data;
+    }
 
     /**
      * Return true if FPC is handled by Varnish
@@ -75,6 +98,19 @@ class EnhancerManagement implements EnhancerManagementInterface
             $this->pageCacheConfig->getType() == PageCacheConfig::VARNISH;
     }
 
+    public function getBasePath()
+    {
+        $basePath = static::BASE_PATH;
+
+        if (!$this->getConfig(\Magento\Store\Model\Store::XML_PATH_USE_REWRITES)) {
+            $indexFileName = basename($_SERVER['SCRIPT_FILENAME']);
+
+            $basePath = '/' . $indexFileName . $basePath;
+        }
+
+        return $basePath;
+    }
+
     /**
      * Return true if can cache this request
      * @return bool
@@ -83,7 +119,10 @@ class EnhancerManagement implements EnhancerManagementInterface
     {
         // Make sure it is a rest-API call (at this level we cannot rely on detected area)
         $uriPath = $this->request->getRequestUri();
-        if (strpos($uriPath, static::BASE_PATH . '/') !== 0) {
+
+		$basePath = $this->getBasePath();
+
+        if (strpos($uriPath, $basePath . '/') !== 0) {
             return false;
         }
 
