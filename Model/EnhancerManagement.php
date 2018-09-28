@@ -64,21 +64,21 @@ class EnhancerManagement implements EnhancerManagementInterface
         RequestInterface $request,
         PageCacheConfig $pageCacheConfig,
         StateInterface $state,
-		\Magento\Framework\App\Config\ReinitableConfigInterface $config,
-		\Magento\Store\Model\StoreManagerInterface $storeManager,
+        \Magento\Framework\App\Config\ReinitableConfigInterface $config,
+        \Magento\Store\Model\StoreManagerInterface $storeManager,
         array $paths = []
     ) {
         $this->request = $request;
         $this->paths = $paths;
         $this->pageCacheConfig = $pageCacheConfig;
         $this->state = $state;
-		$this->config = $config;
-		$this->storeManager = $storeManager;
+        $this->config = $config;
+        $this->storeManager = $storeManager;
     }
 
     public function getConfig($path)
     {
-		$store = $this->storeManager->getStore();
+        $store = $this->storeManager->getStore();
 
         $data = $this->config->getValue($path, \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $store->getCode());
         if ($data === null) {
